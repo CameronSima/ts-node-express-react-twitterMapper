@@ -14,12 +14,15 @@ export default class Miner {
     private twitterClient: any;
     private rateLimit: any;
     private apiCallsRemaining: number;
-    private apiCallInterval: number;
+    public apiCallInterval: number;
     private timeToReset: number;
     private searchParams: Object;
     private tweets: Array<JSON>;
+    private processor: Processor;
+    private kill: Boolean;
 
-    constructor(searchParams: Object) {
+
+    constructor(searchParams: Object, processor: Processor) {
 
         this.twitterClient = new Twitter({
             consumer_key: process.env.CONSUMER_KEY || 
@@ -33,27 +36,31 @@ export default class Miner {
         });
 
         this.searchParams = searchParams;
-        this.terminate = false;
+        this.processor = processor;
 
-        winston.add(
-            winston.transports.File, 
-            { 
-                filename: "../logs/miner.log"
-            });
+        // winston.add(
+        //     winston.transports.File, 
+        //     { 
+        //         filename: "../logs/miner.log"
+        //     });
     }
-
     public async mine() {
 
-        await this.getRateLimit();
-        this.getApiCallState();
+        if (this.kill) {
+            return "Miner stopped";
+        } else {
 
-        console.log("\nCalls left: " + this.apiCallsRemaining + 
-                    "\nTime to reset: " + (this.timeToReset / 60000) + 
-                    "\ninterval: " + this.apiCallInterval / 1000);
-        
-        this.callApi(() => {
-            setTimeout(this.mine.bind(this), this.apiCallInterval)
-        })
+            await this.getRateLimit();
+            this.getApiCallState();
+
+            console.log("\nCalls left: " + this.apiCallsRemaining + 
+                        "\nTime to reset: " + (this.timeToReset / 60000) + 
+                        "\ninterval: " + this.apiCallInterval / 1000);
+            
+            this.callApi(() => {
+                setTimeout(this.mine.bind(this), this.apiCallInterval)
+            })
+        }
     }
 
     private getApiCallState() {
@@ -64,7 +71,8 @@ export default class Miner {
 
     private async callApi(next: Function) {
         await this.getTweets();
-        process.send(this.tweets);
+        //console.log(this.tweets[0])
+        this.processor.save(this.tweets);
         next();
     }
 
@@ -74,7 +82,7 @@ export default class Miner {
             (err: string, tweets: any, res: any) => {
                 if (err)
                     reject(winston.log(err));
-                resolve(this.tweets = tweets);
+                resolve(this.tweets = tweets.statuses);
             });
         })
 
@@ -114,5 +122,9 @@ export default class Miner {
         } else {
             this.apiCallInterval = interval;
         }
+    }
+
+    public terminate() {
+        this.kill = true;
     }
 }

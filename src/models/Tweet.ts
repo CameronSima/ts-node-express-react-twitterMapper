@@ -8,6 +8,7 @@ export type TweetModel = mongoose.Document & {
     geo: string,
     coordinates: string
     hashtags: Array<Object>
+    setimentData: Array<number>
 };
 
 const tweetSchema = new mongoose.Schema({
@@ -17,7 +18,8 @@ const tweetSchema = new mongoose.Schema({
     date: String,
     geo: String,
     coordinates: String,
-    hashtags: Array
+    hashtags: Array,
+    sentimentData: Array
 })
 
 const Tweet = mongoose.model("Tweet", tweetSchema);

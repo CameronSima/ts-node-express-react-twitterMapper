@@ -1,13 +1,13 @@
 import { spawn, fork, ChildProcess } from 'child_process';
 import { default as Processor } from './processor';
+import { default as Miner } from './miner';
+const pythonShell =  require('python-shell');
 
 export default class ProcessManager {
-
     private static _instance: ProcessManager = new ProcessManager();
-
     private processes: Array<any>;
-
     private miner: ChildProcess;
+    private minerCurrentProcess: Miner;
     private nltk: ChildProcess;
     private processor: Processor;
 
@@ -29,45 +29,95 @@ export default class ProcessManager {
         })
     }
 
-    terminateMiner(): string {
-        this.miner.kill();
-        return "Miner stopped";
+    // terminateMiner(): string {
+    //     if (this.miner != undefined) {
+    //         this.miner.kill();
+    //     }
+    //     return "Miner stopped";
+    // }
+
+    stopMiner() {
+        this.minerCurrentProcess.terminate();
+        this.minerCurrentProcess = undefined;
+        return "Miner stopped."
     }
 
-    startMiningProcess(): string {
-        this.miner = fork(__dirname + '/../scripts/miner.ts', [],{ execPath: 'ts-node'});
-        return this.handleNewProcess(this.miner, this.handleGetTweets)
-    }
-
-    startNLTKProcess(tweets: Array<JSON>): string {
-        this.nltk = spawn('python', [ __dirname + '../scripts/sentimentAnalyzer.py']);
-        this.nltk.stdin.write(JSON.stringify(tweets));
-        this.nltk.stdin.end();
-        return this.handleNewProcess(this.nltk, this.handleNLTKProcessedTweets)
-    }
-
-
-    handleNewProcess(process: ChildProcess, handler: Function): string {
-        if (process != null) {
-            this.processes.push(process);
-            this.setMessageListener(process, handler);
-            return process.pid.toString();
+    startMiner() {
+        if (this.minerCurrentProcess == undefined) {
+            this.minerCurrentProcess = new Miner({ 
+            count: 100, 
+            geocode: "39.828200,-98.579500,1340mi"
+        }, this.processor)
+            this.minerCurrentProcess.mine();
+            return "Miner started."
         } else {
-            return "Error occured starting process " + process.pid.toString();
+            return "Miner already running."
         }
     }
 
-    setMessageListener(process: ChildProcess, handler: Function) {
-        process.on('message', (msg) => {
-            handler(msg);
-        })
+    async sentimentizeTweets() {
+        let tweets = await this.processor.getUnSentimentizedTweets();
+
+
+
     }
 
-    handleGetTweets(tweets: Array<JSON>) {
-        this.startNLTKProcess(tweets);
+    // startMiningProcess(): string {
+    //     let result;
+    //     if (this.miner == undefined) {
+    //         this.miner = fork(__dirname + '/miner.js', [], { execPath: 'ts-node'});
+    //         this.setMinerHandlers();
+    //         result = this.miner.pid.toString();
+    //     } else {
+    //         result = "Miner already in progess."
+    //     }
+    //     return result
+    // }
+
+    // setMinerHandlers() {
+    //     this.miner.on('close', (code, signal) => {
+    //         this.miner = undefined;
+    //     })
+    // }
+
+    startNLTKProcess(data: Array<JSON>): string {
+        this.nltk = spawn('python', [__dirname + '/../scripts/sentimentAnalyzer.py']);
+        this.setNLTKListeners(data)
+        return this.nltk.pid.toString();
     }
 
-    handleNLTKProcessedTweets(NLTKProcessedTweets: Array<JSON>) {
-        this.processor.writeToDb(NLTKProcessedTweets);
+    setNLTKListeners(data: Array<JSON>) {
+        this.nltk.stdout.on('data', function(data){
+        dataString += data.toString();
+        });
+        py.stdout.on('end', function(){
+        console.log('Sum of numbers=',dataString);
+        });
+        py.stdin.write(JSON.stringify(data));
+        py.stdin.end();
     }
+
+    // test() {
+    //     var spawn = require('child_process').spawn,
+    //         py    = spawn('python', ['/Users/cameronsima/dev/ts-node-twitter-sentimentmap/src/scripts/sentimentAnalyzer.py']),
+    //         data = [1,2,3,4,5,6,7,8,9],
+    //         dataString = '';
+
+    //     py.stdout.on('data', (data: any) => {
+    //     console.log(data)
+    //     });
+    //     py.stdout.on('end', () => {
+    //     console.log('Sum of numbers=',dataString);
+    //     });
+    //     py.stdin.write(JSON.stringify(data));
+    //     py.stdin.end();
+    // }
+
+    // pipeToNLTK(data: Array<JSON>) {
+
+    //     this.nltk.stdin.write(JSON.stringify(data))
+    //     this.nltk.stdin.end();
+    // }
+
+
 }

@@ -16,8 +16,22 @@ winston.add(
 export default class Processor {
     save: Function;
     constructor(saveFormat: string) {
-
         this.getSaveFormat(saveFormat);
+    }
+
+    public async getUnSentimentizedTweets() {
+        return new Promise((resolve, reject) => {
+            Tweet.find({
+                sentimentData: null
+            })
+            .limit(2000)
+            .then((docs) => {
+                resolve(docs)
+            })
+            .catch((err) => {
+                reject(err)
+            })
+        })
     }
     public async writeToJsonFile(data: Array<JSON>) {
         return new Promise((resolve, reject) => {
@@ -32,32 +46,31 @@ export default class Processor {
     public async writeToDb(data: Array<JSON>) {
         let tweetObs = this.jsonToObjects(data);
         return new Promise((resolve, reject) => {
-            Tweet.insertMany(tweetObs)
-                .then((docs) => {
-                    resolve();
-                })
-                .catch((err) => {
+            Tweet.insertMany(tweetObs, (err, docs) => {
+                if (err)
                     reject(err);
-                })
+                resolve(docs);
+            })
+                
         })
     }
 
     public jsonToObjects(data: Array<any>) {
         return data.map((tweet) => {
-            let doc = new Tweet({
+             return new Tweet({
                 tweetId: tweet.id,
-                location: tweet.user.location,
-                text: tweet.text,
-                date: tweet.created_at,
-                geo: tweet.geo,
-                coordinates: tweet.coordinates,
-                hashtags: tweet.entities.hashtags
+                location: tweet.user['location'],
+                text: tweet['text'],
+                date: tweet['created_at'],
+                geo: tweet['geo'],
+                coordinates: tweet['coordinates'],
+                hashtags: tweet.entities['hashtags']
             })
         })
     }
 
     getSaveFormat(format: string) {
-        if (format == "dataase" || "db") {
+        if (format == "database" || "db") {
             this.save = this.writeToDb
         } else {
             this.save = this.writeToJsonFile;
