@@ -58,8 +58,26 @@ export default class ProcessManager {
     async sentimentizeTweets() {
         let tweets = await this.processor.getUnSentimentizedTweets();
 
+    }
 
+    startNLTKProcess(data: Array<JSON>): string {
+        this.nltk = spawn('python', [__dirname + '/../scripts/sentimentAnalyzer.py']);
+        this.nltk.stdout.on('data', (data: any) => {
+            
+            this.processor.updateTweets(data);
+            console.log(data.toString())
+        })
+        this.nltk.stdout.on('end', () => {
+            console.log('end');
+            this.endNLTKProcess();
+        })
+        this.nltk.stdin.write(JSON.stringify(data));
+        this.nltk.stdin.end();
+        return this.nltk.pid.toString();
+    }
 
+    endNLTKProcess() {
+        this.nltk = undefined;
     }
 
     // startMiningProcess(): string {

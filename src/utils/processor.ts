@@ -1,7 +1,9 @@
 
 import * as fs from "fs";
 import { default as Tweet } from "../models/Tweet";
+import { Tweet as tweet } from "../dao/tweet";
 const winston = require("winston");
+import * as async from 'async';
 
 winston.add(
   winston.transports.File, {
@@ -53,6 +55,27 @@ export default class Processor {
             })
                 
         })
+    }
+
+    public async updateTweets(data: Array<tweet>) {
+
+        async.each(data, (tweetObj, next) => {
+            this.updateTweet(tweetObj, next);
+        }, (err) => {
+            if (err)
+                console.log(err)
+        })
+    }
+
+    public updateTweet(tweet: tweet, next: Function) {
+        Tweet.findOneAndUpdate(
+            { _id: tweet._id},
+            { $set: { sentimentData: tweet.sentimentData }},
+            (err, doc) => {
+                if (err)
+                    console.log(err)
+                next()
+            })
     }
 
     public jsonToObjects(data: Array<any>) {

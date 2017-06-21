@@ -13,7 +13,7 @@
     "build": "npm run build-sass && npm run build-ts && npm run copy-static-assets",
     "serve": "node dist/server.js",
     "watch": "concurrently -k -p \"[{name}]\" -n \"Sass,TypeScript,Node\" -c \"yellow.bold,cyan.bold,green.bold\" \"npm run watch-sass\" \"npm run watch-ts\" \"nodemon dist/server.js\"",
-    "test": "jest --forceExit",
+    "test": "jest --forceExit --verbose",
     "build-ts": "tsc",
     "watch-ts": "tsc -w",
     "build-sass": "node-sass src/public/css/main.scss dist/public/css/main.css",

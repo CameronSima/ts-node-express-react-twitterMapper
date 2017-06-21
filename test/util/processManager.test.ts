@@ -19,6 +19,43 @@ describe('Process Manager Tests', () => {
         expect(pm.stopMiner()).toEqual("Miner stopped.")
     })
 
+    it('can start a Python process and return it\'s process id', () => {
+        let pm = ProcessManager.getInstance();
+        let pythonProcessId = pm.startNLTKProcess(new Array<JSON>);
+        expect(pythonProcessId).toMatch(/[0-9]+/)
+    })
+
+    it('can pass JSON to the Python process', () => {
+        let someData1 = {
+            tweetId: "df34ff54",
+            location: "Philadelphia, PA",
+            text: "I love cookies!",
+            date: "June 21, 2017",
+            geo: null,
+            coordinates: null,
+            hashtags: ["#poop"],
+            sentimentData: null
+        }
+        let someData2 = {
+            tweetId: "df34f4",
+            location: "New York, NY",
+            text: "I hate ice cream!",
+            date: "May 1, 2014",
+            geo: null,
+            coordinates: null,
+            hashtags: ["#peepee"],
+            sentimentData: null
+        }
+
+        let data = JSON.parse(JSON.stringify([someData1, someData2]));
+        let pm = ProcessManager.getInstance();
+        let pythonProcessId = pm.startNLTKProcess(data);
+        expect(pythonProcessId).toMatch(/[0-9]+/)
+        // pm.startNLTKProcess(JSON.parse(JSON.stringify(someData)), (res)=>{
+        //     console.log("RSULT: " + res)
+        // });
+    })
+
 
     // it('can read from a python script', () => {
     //     let data = JSON.parse(JSON.stringify([{ hello: 'world'}]));
