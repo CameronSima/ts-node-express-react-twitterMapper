@@ -64,7 +64,7 @@ export default class ProcessManager {
         this.nltk = spawn('python', [__dirname + '/../scripts/sentimentAnalyzer.py']);
         this.nltk.stdout.on('data', (data: any) => {
             
-            this.processor.updateTweets(data);
+
             console.log(data.toString())
         })
         this.nltk.stdout.on('end', () => {

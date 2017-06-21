@@ -5,18 +5,17 @@ def read_input():
     lines = sys.stdin.read()
     return json.loads(lines)
 
-def get_sentiments(sentence):
+def get_sentiments(tweet):
     sid = SentimentIntensityAnalyzer()
-    ss = sid.polarity_scores(sentence)
-
-    for k in sorted(ss):
-        print('{0}: {1}, '.format(k, ss[k]))
+    sentiment = sid.polarity_scores(tweet['text'])
+    tweet['sentimentData'] = sentiment
+    print tweet
+   
 
 def main():
     lines = read_input()
     for line in lines:
-        sentence = line['text']
-        get_sentiments(sentence)
+        get_sentiments(line)
 
 if __name__ == '__main__':
     main()
