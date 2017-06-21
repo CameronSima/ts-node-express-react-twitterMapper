@@ -49,7 +49,6 @@ export default class Miner {
         if (this.kill) {
             return "Miner stopped";
         } else {
-
             await this.getRateLimit();
             this.getApiCallState();
 
@@ -76,7 +75,7 @@ export default class Miner {
         next();
     }
 
-    private async getTweets() {
+    private getTweets() {
         return new Promise((resolve, reject) => {
             this.twitterClient.get("search/tweets", this.searchParams, 
             (err: string, tweets: any, res: any) => {
@@ -88,7 +87,7 @@ export default class Miner {
 
     }
 
-    private async getRateLimit(){
+    private getRateLimit(){
         return new Promise((resolve, reject) => {
             this.twitterClient.get("application/rate_limit_status", 
             (err: string, status: any, res: any) => {

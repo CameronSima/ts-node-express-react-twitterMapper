@@ -11,28 +11,30 @@ export let getAll = (req: Request, res: Response) => {
 }
 
 export let getConsole = (req: Request, res: Response) => {
- 
-    let response = new ConsoleResponse;
 
-    async.parallel( {
-        count: function(next) {
-            Tweet.find({
-                text: { $ne: null }
-                })
-            .count()
-            .then((count) => {
-                next(null, count);
-            })
-        },
-        collectionSize: function(next) {
-            
-            // size to Mb
-            Tweet.collection.stats({ scale: 1024 * 1024 })
-            .then((stats) => {
-                next(null, stats.storageSize + " MB")
-            })
-        }
-    }, function(err, results) {
+    let getTweetCount = (next: Function) => {
+         Tweet.find({
+             text: { $ne: null }
+             })
+         .count()
+         .then((count) => {
+             console.log(count)
+             next(null, count.toLocaleString());
+         })
+    }
+
+    let getCollectionMb = (next: Function) => {
+         // size to Mb
+         Tweet.collection.stats({ scale: 1024 * 1024 })
+         .then((stats) => {
+             next(null, stats.storageSize + " MB");
+         }) 
+    }
+
+    async.parallel({
+        count: getTweetCount,
+        collectionSize: getCollectionMb
+    }, (err, results) => {
         res.json(results)
     })
 }
