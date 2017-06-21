@@ -80,22 +80,22 @@ export default class ProcessManager {
     //     })
     // }
 
-    startNLTKProcess(data: Array<JSON>): string {
-        this.nltk = spawn('python', [__dirname + '/../scripts/sentimentAnalyzer.py']);
-        this.setNLTKListeners(data)
-        return this.nltk.pid.toString();
-    }
+    // startNLTKProcess(data: Array<JSON>): string {
+    //     this.nltk = spawn('python', [__dirname + '/../scripts/sentimentAnalyzer.py']);
+    //     this.setNLTKListeners(data)
+    //     return this.nltk.pid.toString();
+    // }
 
-    setNLTKListeners(data: Array<JSON>) {
-        this.nltk.stdout.on('data', function(data){
-        dataString += data.toString();
-        });
-        py.stdout.on('end', function(){
-        console.log('Sum of numbers=',dataString);
-        });
-        py.stdin.write(JSON.stringify(data));
-        py.stdin.end();
-    }
+    // setNLTKListeners(data: Array<JSON>) {
+    //     this.nltk.stdout.on('data', function(data){
+    //     this.processor.
+    //     });
+    //     py.stdout.on('end', function(){
+    //     console.log('Sum of numbers=',dataString);
+    //     });
+    //     py.stdin.write(JSON.stringify(data));
+    //     py.stdin.end();
+    // }
 
     // test() {
     //     var spawn = require('child_process').spawn,

@@ -1,5 +1,7 @@
 import {Request, Response} from "express";
 import { default as Tweet } from '../models/Tweet';
+import { default as ConsoleResponse } from '../utils/consoleResponse';
+import * as async from 'async';
 
 export let getAll = (req: Request, res: Response) => {
     Tweet.find()
@@ -9,20 +11,28 @@ export let getAll = (req: Request, res: Response) => {
 }
 
 export let getConsole = (req: Request, res: Response) => {
-    interface consoleResponse {
-        tweetCount: number,
-        topHashtags: Array<string>,
-        topLocation: string
-    };
-    let response:  consoleResponse;
+ 
+    let response = new ConsoleResponse;
 
-    Tweet.find({
-        text: { $ne: null}
+    async.parallel( {
+        count: function(next) {
+            Tweet.find({
+                text: { $ne: null }
+                })
+            .count()
+            .then((count) => {
+                next(null, count);
+            })
+        },
+        collectionSize: function(next) {
+            
+            // size to Mb
+            Tweet.collection.stats({ scale: 1024 * 1024 })
+            .then((stats) => {
+                next(null, stats.storageSize + " MB")
+            })
+        }
+    }, function(err, results) {
+        res.json(results)
     })
-    .count()
-    .then((count) => {
-        response.tweetCount = count;
-        res.json(response)
-    })
-
 }
