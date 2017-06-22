@@ -19,11 +19,13 @@ describe('Process Manager Tests', () => {
         expect(pm.stopMiner()).toEqual("Miner stopped.")
     })
 
-    it('can start a Python process and return it\'s process id', () => {
-        let pm = ProcessManager.getInstance();
-        let pythonProcessId = pm.startNLTKProcess(new Array<JSON>);
-        expect(pythonProcessId).toMatch(/[0-9]+/)
-    })
+    // it('can start a Python process and return it\'s process id', () => {
+
+    //     let pm = ProcessManager.getInstance();
+    //     let pythonProcessId = pm.startNLTKProcess(new Array<JSON>);
+    //     expect(pythonProcessId).toMatch(/[0-9]+/);
+    //     pm.endNLTKProcess();
+    // });
 
     it('can pass JSON to the Python process', () => {
         let someData1 = {
@@ -51,17 +53,17 @@ describe('Process Manager Tests', () => {
         let pm = ProcessManager.getInstance();
         let pythonProcessId = pm.startNLTKProcess(data);
         expect(pythonProcessId).toMatch(/[0-9]+/)
-        // pm.startNLTKProcess(JSON.parse(JSON.stringify(someData)), (res)=>{
-        //     console.log("RSULT: " + res)
-        // });
+        pm.endNLTKProcess();
     })
 
 
-    // it('can read from a python script', () => {
-    //     let data = JSON.parse(JSON.stringify([{ hello: 'world'}]));
-    //     let pm = ProcessManager.getInstance();
-    //     pm.startNLTKProcess();
-    //     pm.pipeToNLTK(data);
-    // })
+    it('return tweets that need to be processed by the nltk script', () => {
+        let pm = ProcessManager.getInstance();
+        pm.getTweetsToSentimentize()
+        .then((tweets) => {
+            expect(tweets).toBeDefined()
+            expect(tweets[0].sentimentData).toBeNull()
+        })
+    })
     
 })

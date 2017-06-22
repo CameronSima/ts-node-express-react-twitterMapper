@@ -11,16 +11,36 @@ export let getAll = (req: Request, res: Response) => {
 }
 
 export let getConsole = (req: Request, res: Response) => {
+    //Tweet.remove({}, ()=> {})
 
-    let getTweetCount = (next: Function) => {
+    let getTotalTweetCount = (next: Function) => {
          Tweet.find({
              text: { $ne: null }
              })
          .count()
          .then((count) => {
-             console.log(count)
              next(null, count.toLocaleString());
          })
+    }
+
+    let getSentimentizedTweetCount = (next: Function) => {
+         Tweet.find({
+             sentimentData: { $ne: null }
+             })
+         .count()
+         .then((count) => {
+             next(null, count.toLocaleString());
+         })
+    }
+
+    let getUnSentimentizedTweetCount = (next: Function) => {
+        Tweet.find({
+            sentimentData: null
+        })
+        .count()
+        .then((count) => {
+            next(null, count)
+        })
     }
 
     let getCollectionMb = (next: Function) => {
@@ -32,8 +52,10 @@ export let getConsole = (req: Request, res: Response) => {
     }
 
     async.parallel({
-        count: getTweetCount,
-        collectionSize: getCollectionMb
+        count: getTotalTweetCount,
+        unSentimentizedTweetCount: getUnSentimentizedTweetCount,
+        sentimentizedTweetCount: getSentimentizedTweetCount,
+        collectionSize: getCollectionMb,
     }, (err, results) => {
         res.json(results)
     })

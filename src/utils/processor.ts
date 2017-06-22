@@ -26,9 +26,9 @@ export default class Processor {
             Tweet.find({
                 sentimentData: null
             })
-            .limit(2000)
+            .limit(20)
             .then((docs) => {
-                resolve(docs)
+                return resolve(docs)
             })
             .catch((err) => {
                 reject(err)
@@ -57,24 +57,23 @@ export default class Processor {
         })
     }
 
-    public async updateTweets(data: Array<tweet>) {
+    // public async updateTweets(data: Array<tweet>) {
 
-        async.each(data, (tweetObj, next) => {
-            this.updateTweet(tweetObj, next);
-        }, (err) => {
-            if (err)
-                console.log(err)
-        })
-    }
+    //     async.each(data, (tweetObj, next) => {
+    //         this.updateTweet(tweetObj, next);
+    //     }, (err) => {
+    //         if (err)
+    //             console.log(err)
+    //     })
+    // }
 
-    public updateTweet(tweet: tweet, next: Function) {
+    public updateTweet(tweet: tweet) {
         Tweet.findOneAndUpdate(
             { _id: tweet._id},
             { $set: { sentimentData: tweet.sentimentData }},
             (err, doc) => {
                 if (err)
                     console.log(err)
-                next()
             })
     }
 

@@ -6,9 +6,6 @@ import * as Tweet from "../models/Tweet";
 import * as settings from "../settings";
 import { default as Processor } from "./processor";
 
-// process.send will be undefined if the parent process is not running (i.e. in a test)
-process.send = process.send || function () {};
-
 export default class Miner {
 
     private twitterClient: any;
@@ -87,7 +84,7 @@ export default class Miner {
 
     }
 
-    private getRateLimit(){
+    private getRateLimit() {
         return new Promise((resolve, reject) => {
             this.twitterClient.get("application/rate_limit_status", 
             (err: string, status: any, res: any) => {
