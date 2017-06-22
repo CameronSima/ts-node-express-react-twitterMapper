@@ -13,3 +13,8 @@ export let getTurnOff = (req: Request, res: Response) => {
     const response = processManager.stopMiner();
     res.send(response);
 }
+
+export let getMiningData = (req: Request, res: Response) => {
+    const response = processManager.getMiningData();
+    res.json(response);
+}

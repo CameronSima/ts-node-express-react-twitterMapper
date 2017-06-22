@@ -148,6 +148,9 @@ app.get("/auth/facebook/callback", passport.authenticate("facebook", { failureRe
 app.get("/activate_miner", miningController.getTurnOn);
 app.get("/deactivate_miner", miningController.getTurnOff);
 
+// poll this endpoint to get realtime data on the twitter miner
+app.get("/mining_status", miningController.getMiningData);
+
 app.get("/tweet_data", dataController.getAll);
 app.get("/console", dataController.getConsole);
 

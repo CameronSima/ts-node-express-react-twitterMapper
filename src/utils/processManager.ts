@@ -6,9 +6,7 @@ let node_cron = require('node-cron');
 
 export default class ProcessManager {
     private static _instance: ProcessManager = new ProcessManager();
-    private processes: Array<any>;
     private minerCurrentProcess: Miner;
-    // private nltk: ChildProcess;
     private nltk: any;
     private processor: Processor;
 
@@ -18,26 +16,13 @@ export default class ProcessManager {
         }
         ProcessManager._instance = this;
         this.processor = new Processor(process.env.SAVE_FORMAT || "database");
-        this.processes = [];
         this.scheduleNLTK();
     }
     public static getInstance(): ProcessManager {
         return ProcessManager._instance;
     }
 
-    endAll() {
-        this.processes.forEach((process) => {
-            process.kill('SIGHUP')
-        })
-    }
-
-    stopMiner() {
-        this.minerCurrentProcess.terminate();
-        this.minerCurrentProcess = undefined;
-        return "Miner stopped."
-    }
-
-    startMiner() {
+    public startMiner() {
         if (this.minerCurrentProcess == undefined) {
             this.minerCurrentProcess = new Miner({ 
             count: 100, 
@@ -50,19 +35,34 @@ export default class ProcessManager {
         }
     }
 
-    async getTweetsToSentimentize() {
+    public stopMiner() {
+        this.minerCurrentProcess.terminate();
+        this.minerCurrentProcess = undefined;
+        return "Miner stopped."
+    }
+
+    public getMiningData() {
+        if (this.minerCurrentProcess == undefined) {
+            return "Twitter miner is not currently activated."
+        } else {
+            return this.minerCurrentProcess.getMiningStatus();
+        }
+    }
+
+    public async getTweetsToSentimentize() {
         let tweets = await this.processor.getUnSentimentizedTweets();
         return tweets;
     }
 
-    startNLTKProcess(data: Array<JSON>): string {
+    public startNLTKProcess(data: Array<JSON>): string {
         if (this.nltk == undefined) {
             this.nltk = new PythonShell('/src/scripts/sentimentAnalyzer.py');  
             this.passDataToNLTK(data);
             this.setNLTKListeners();
-            
+        } else {
+            return "Python process is already running."
         }
-            return "00"
+            return "Python process started."
     }
 
     private setNLTKListeners() {
@@ -71,28 +71,29 @@ export default class ProcessManager {
         this.processor.updateTweet(tweet);
 
         });
-      
         this.nltk.end((err:any) => {
             if (err){
                 throw err;
             };
-            console.log('finished');
-            this.nltk = undefined;
+            console.log('Python process finished.');
+            this.endNLTKProcess();
         });
     }
 
-    passDataToNLTK(data: Array<JSON>) {
+    private passDataToNLTK(data: Array<JSON>) {
         this.nltk.send(JSON.stringify(data));
     }
-    endNLTKProcess() {
+    public endNLTKProcess() {
         this.nltk = undefined;
     }
 
-    async scheduleNLTK() {
-        let tweets = await this.getTweetsToSentimentize();
-        node_cron.schedule('*/10 * * * * *', () => {  
-            if (tweets) {
-                this.startNLTKProcess(tweets);
+    private scheduleNLTK() {
+        node_cron.schedule('*/6 * * * * *', async () => {  
+            let tweets = <Array<JSON>>await this.getTweetsToSentimentize();
+            if (tweets.length > 50) {
+                console.log(this.startNLTKProcess(tweets));
+            } else {
+                console.log("No unprocessed tweets.")
             }
         });
     }

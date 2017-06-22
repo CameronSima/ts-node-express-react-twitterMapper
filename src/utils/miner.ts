@@ -2,9 +2,10 @@ let winston = require("winston");
 let fs = require("fs");
 let Twitter = require('twitter');
 import { Request, Response } from "express";
-import * as Tweet from "../models/Tweet";
-import * as settings from "../settings";
 import { default as Processor } from "./processor";
+import * as Tweet from "../models/Tweet";
+import  MiningStatus  from "../dao/miningStatus";
+import * as settings from "../settings";
 
 export default class Miner {
 
@@ -17,7 +18,6 @@ export default class Miner {
     private tweets: Array<JSON>;
     private processor: Processor;
     private kill: Boolean;
-
 
     constructor(searchParams: Object, processor: Processor) {
 
@@ -118,6 +118,14 @@ export default class Miner {
         } else {
             this.apiCallInterval = interval;
         }
+    }
+
+    getMiningStatus(): MiningStatus {
+        let ms = new MiningStatus;
+        ms.callsleft = this.apiCallsRemaining;
+        ms.timeToReset = this.timeToReset / 60000;
+        ms.interval = this.apiCallInterval / 1000;
+        return ms;
     }
 
     public terminate() {

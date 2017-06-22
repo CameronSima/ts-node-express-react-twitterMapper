@@ -26,7 +26,7 @@ export default class Processor {
             Tweet.find({
                 sentimentData: null
             })
-            .limit(20)
+            .limit(250)
             .then((docs) => {
                 return resolve(docs)
             })
@@ -56,16 +56,6 @@ export default class Processor {
                 
         })
     }
-
-    // public async updateTweets(data: Array<tweet>) {
-
-    //     async.each(data, (tweetObj, next) => {
-    //         this.updateTweet(tweetObj, next);
-    //     }, (err) => {
-    //         if (err)
-    //             console.log(err)
-    //     })
-    // }
 
     public updateTweet(tweet: tweet) {
         Tweet.findOneAndUpdate(
