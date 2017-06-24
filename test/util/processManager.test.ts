@@ -69,9 +69,8 @@ describe('Process Manager Tests', () => {
 
     it('can get twitter miner status', () => {
         let pm = ProcessManager.getInstance();
-        pm.startMiner();
         let status = pm.getMiningData();
-        console.log(status)
+        expect(status).toBeDefined();
     })
     
 })

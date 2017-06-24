@@ -1,5 +1,6 @@
 import { spawn, fork, ChildProcess } from 'child_process';
 import { default as Processor } from './processor';
+import  MiningStatus  from "../dao/miningStatus";
 import { default as Miner } from './miner';
 let PythonShell = require('python-shell');
 let node_cron = require('node-cron');
@@ -43,7 +44,9 @@ export default class ProcessManager {
 
     public getMiningData() {
         if (this.minerCurrentProcess == undefined) {
-            return "Twitter miner is not currently activated."
+            let ms = new MiningStatus
+            ms.status = "Miner is not currently running."
+            return ms;
         } else {
             return this.minerCurrentProcess.getMiningStatus();
         }

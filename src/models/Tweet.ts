@@ -1,4 +1,5 @@
 import * as mongoose from "mongoose";
+import Processor from '../utils/processor';
 
 export type TweetModel = mongoose.Document & {
     tweetId: string,
@@ -8,7 +9,8 @@ export type TweetModel = mongoose.Document & {
     geo: string,
     coordinates: string
     hashtags: Array<Object>
-    sentimentData: Object
+    sentimentData: Object,
+    latLng: Object
 };
 
 const tweetSchema = new mongoose.Schema({
@@ -19,7 +21,11 @@ const tweetSchema = new mongoose.Schema({
     geo: String,
     coordinates: String,
     hashtags: Array,
-    sentimentData: Object
+    sentimentData: Object,
+    latLng: {
+        lat: Number,
+        lng: Number
+    }
 })
 
 const Tweet = mongoose.model("Tweet", tweetSchema);

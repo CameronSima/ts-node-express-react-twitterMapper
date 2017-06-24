@@ -125,6 +125,7 @@ export default class Miner {
         ms.callsleft = this.apiCallsRemaining;
         ms.timeToReset = this.timeToReset / 60000;
         ms.interval = this.apiCallInterval / 1000;
+        ms.status = "Miner is Running.";
         return ms;
     }
 

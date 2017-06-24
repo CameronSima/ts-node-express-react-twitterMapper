@@ -1,12 +1,22 @@
 import {Request, Response} from "express";
 import { default as Tweet } from '../models/Tweet';
 import { default as ConsoleResponse } from '../utils/consoleResponse';
+import MapServices from '../services/mapServices';
 import * as async from 'async';
 
-export let getAll = (req: Request, res: Response) => {
-    Tweet.find()
+const mapServices = new MapServices
+
+export let getAll = async (req: Request, res: Response) => {
+    let data = await mapServices.getData();
+    res.json(data);
+}
+
+export let getGeoCoded = (req: Request, res: Response) => {
+    Tweet.find({
+        geo: { $ne: null }
+    })
     .then((data) => {
-        res.json(data)
+        res.json(data);
     })
 }
 
