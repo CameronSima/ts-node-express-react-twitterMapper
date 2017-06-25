@@ -10,7 +10,7 @@ export type TweetModel = mongoose.Document & {
     coordinates: string
     hashtags: Array<Object>
     sentimentData: Object,
-    latLng: Object
+    latLng: Object,
 };
 
 const tweetSchema = new mongoose.Schema({
@@ -22,6 +22,8 @@ const tweetSchema = new mongoose.Schema({
     coordinates: String,
     hashtags: Array,
     sentimentData: Object,
+
+    // Updated using data from cities.txt
     latLng: {
         lat: Number,
         lng: Number

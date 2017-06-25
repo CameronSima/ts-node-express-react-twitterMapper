@@ -93,6 +93,7 @@ export default class ProcessManager {
     private scheduleNLTK() {
         node_cron.schedule('*/6 * * * * *', async () => {  
             let tweets = <Array<JSON>>await this.getTweetsToSentimentize();
+            console.log(tweets.length)
             if (tweets.length > 50) {
                 console.log(this.startNLTKProcess(tweets));
             } else {

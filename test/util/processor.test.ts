@@ -5,10 +5,12 @@ describe('Processor tests', () => {
         expect(1).toBe(1);
     })
 
-    it('can return a city JOSON object containing lat and lng from a city name', () => {
+    it('can return a city JOSON object containing lat and lng from a city and state', () => {
         const proc = new Processor("file");
-        const city = "Philadelphia";
-        console.log(proc.getCoords(city))
+        const city = "Philadelphia, PA";
+        proc.loadCitiesData();
+        setTimeout(console.log(proc.getCoords.bind(this)), 2000)
+        
         
 
     })

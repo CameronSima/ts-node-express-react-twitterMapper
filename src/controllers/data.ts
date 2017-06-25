@@ -11,14 +11,6 @@ export let getAll = async (req: Request, res: Response) => {
     res.json(data);
 }
 
-export let getGeoCoded = (req: Request, res: Response) => {
-    Tweet.find({
-        geo: { $ne: null }
-    })
-    .then((data) => {
-        res.json(data);
-    })
-}
 
 export let getConsole = (req: Request, res: Response) => {
     //Tweet.remove({}, ()=> {})
@@ -61,10 +53,19 @@ export let getConsole = (req: Request, res: Response) => {
          }) 
     }
 
+    let getWithLatLng = (next: Function) => {
+        Tweet.find({
+            latLng: { $ne: null }
+        })
+        .count()
+        .then((count) => next(null, count))
+    }
+
     async.parallel({
         count: getTotalTweetCount,
         unSentimentizedTweetCount: getUnSentimentizedTweetCount,
         sentimentizedTweetCount: getSentimentizedTweetCount,
+        geoCoded: getWithLatLng,
         collectionSize: getCollectionMb,
     }, (err, results) => {
         res.json(results)

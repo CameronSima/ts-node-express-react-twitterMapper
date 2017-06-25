@@ -1,9 +1,10 @@
 
 import * as fs from "fs";
-import { default as Tweet } from "../models/Tweet";
-const winston = require("winston");
+import { default as Tweet, TweetModel } from "../models/Tweet";
 import * as async from 'async';
+const winston = require("winston");
 const csv = require('csvtojson');
+const placename = require('placename');
 
 winston.add(
   winston.transports.File, {
@@ -17,11 +18,8 @@ winston.add(
 
 export default class Processor {
     save: Function;
-    cities: Array<JSON>;
     constructor(saveFormat: string) {
         this.getSaveFormat(saveFormat);
-        this.cities = [];
-        this.loadCitiesData();
     }
 
     public async getUnSentimentizedTweets() {
@@ -60,15 +58,24 @@ export default class Processor {
         })
     }
 
-    public updateTweet(tweet: any) {
-
-        this.setCoords(tweet);
+    public async updateTweet(tweet: any) {
+        await this.setCoords(tweet);
         console.log(tweet)
+        this.setProcessedFields(tweet);
+
+        // if (tweet.latLng == undefined) {
+        //     Tweet.findByIdAndRemove(tweet._id);
+        // } else {
+        //     this.setProcessedFields(tweet);
+        // }
+    }
+
+    setProcessedFields(tweet: TweetModel) {
         Tweet.findOneAndUpdate(
             { _id: tweet._id},
             { $set: { sentimentData: tweet.sentimentData,
                       latLng: tweet.latLng
-             }},
+            }},
             (err, doc) => {
                 if (err)
                     console.log(err)
@@ -76,42 +83,33 @@ export default class Processor {
     }
 
     setCoords(tweet: any) {
-        try {
-            let latLng = <any> this.getCoords(tweet.location);
-            tweet.latLng = {
-                lat: latLng.latitude,
-                lng: latLng.longitude
+        return new Promise((resolve, reject) => {
+            try {
+                placename(tweet.location, (err: string, result: any) => {
+                    if (tweet.location) {
+                        const city = this.filterResultCities(result);
+                        if (city != undefined) {
+                            tweet.latLng = {};
+                            tweet.latLng.lat = city.lat;
+                            tweet.latLng.lng = city.lon;
+                        }
+                    }
+                    resolve();
+                })
+            } catch(err) {
+                resolve();
+                // No valid location was supplied         
             }
-        } catch(err) {
-            // No valid location was supplied         
-        }
-    }
-
-    getCoords(location: string) {
-        try {
-            let locArr: Array<String> = location.toLowerCase().split(', ');
-                return this.cities.filter((city: any) => {
-                    return city.city1 == locArr[0];
-                })[0]
-        } catch(err) {
-            console.log(err)
-        }
-  
-    }
-
-    loadCitiesData() {
-        csv()
-        .fromFile('/Users/cameronsima/dev/ts-node-twitter-sentimentmap/src/utils/cities.txt')
-        .on('json', (jsonObj: JSON) => {
-            this.cities.push(jsonObj);
-        })  
-        .on('done', (err: string) => {
-            if (err)
-                console.log(err)
         })
     }
 
-
+    filterResultCities(cities: Array<any>) {
+        if (cities && cities.length) {
+            return cities.filter((city) => {
+                return city.country == 'US';
+            })[0]
+        }
+    }
 
     public jsonToObjects(data: Array<any>) {
         return data.map((tweet) => {
