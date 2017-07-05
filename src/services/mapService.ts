@@ -1,9 +1,8 @@
 import { default as Tweet } from '../models/Tweet';
-import TweetOb from '../dao/tweet';
 import Processor from '../utils/processor';
 const _ = require('lodash');
 
-export default class MapServices<Tweet> {
+export default class MapService<Tweet> {
 
     processor: Processor;
     constructor() {

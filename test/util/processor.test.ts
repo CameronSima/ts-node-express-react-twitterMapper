@@ -1,16 +1,17 @@
 import { default as Processor } from '../../src/utils/processor';
 
+let processor = new Processor("db");
+
 describe('Processor tests', () => {
-    it('Turns json data to mongodb model', () => {
-        expect(1).toBe(1);
+
+    it('Can filter array of cities to one in the US', () => {
+       let cities = [{country: 'US', city: 'New York'}, {country: 'CA'}];
+       let city = processor.filterResultCities(cities);
+       expect(city.country).toEqual('US')
+
     })
 
-    it('can return a city JOSON object containing lat and lng from a city and state', () => {
-        const proc = new Processor("file");
-        const city = "Philadelphia, PA";
-        proc.loadCitiesData();
-        setTimeout(console.log(proc.getCoords.bind(this)), 2000)
-        
+    it('', () => {
         
 
     })

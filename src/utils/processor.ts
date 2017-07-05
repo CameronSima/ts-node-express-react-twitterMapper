@@ -60,7 +60,6 @@ export default class Processor {
 
     public async updateTweet(tweet: any) {
         await this.setCoords(tweet);
-        console.log(tweet)
         this.setProcessedFields(tweet);
 
         // if (tweet.latLng == undefined) {

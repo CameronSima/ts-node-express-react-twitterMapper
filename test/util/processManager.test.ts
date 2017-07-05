@@ -1,6 +1,12 @@
 import { default as ProcessManager } from '../../src/utils/processManager';
 
+let pm = ProcessManager.getInstance();
+
 describe('Process Manager Tests', () => {
+
+    afterAll(() => {
+        pm = null;
+    })
 
     it('There can be only one!', () => {
         function instantiate() {
@@ -10,18 +16,14 @@ describe('Process Manager Tests', () => {
     })
 
     it('Can start a miner process', () => {
-        let pm = ProcessManager.getInstance();
         expect(pm.startMiner()).toEqual("Miner started.")
     })
 
     it('can kill a mining process', () => {
-        let pm = ProcessManager.getInstance();
         expect(pm.stopMiner()).toEqual("Miner stopped.")
     })
 
     it('can start a Python process and return a message', () => {
-
-        let pm = ProcessManager.getInstance();
         let message = pm.startNLTKProcess(new Array<JSON>);
         expect(message).toEqual("Python process started.");
         pm.endNLTKProcess();
@@ -51,7 +53,6 @@ describe('Process Manager Tests', () => {
         }
 
         let data = JSON.parse(JSON.stringify([someData1, someData2]));
-        let pm = ProcessManager.getInstance();
         let message = pm.startNLTKProcess(data);
         expect(message).toMatch("Python process started.");
         pm.endNLTKProcess();
@@ -59,7 +60,6 @@ describe('Process Manager Tests', () => {
 
 
     it('return tweets that need to be processed by the nltk script', () => {
-        let pm = ProcessManager.getInstance();
         pm.getTweetsToSentimentize()
         .then((tweets) => {
             expect(tweets).toBeDefined()
@@ -68,7 +68,6 @@ describe('Process Manager Tests', () => {
     });
 
     it('can get twitter miner status', () => {
-        let pm = ProcessManager.getInstance();
         let status = pm.getMiningData();
         expect(status).toBeDefined();
     })

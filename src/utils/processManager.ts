@@ -1,6 +1,6 @@
 import { spawn, fork, ChildProcess } from 'child_process';
 import { default as Processor } from './processor';
-import  MiningStatus  from "../dao/miningStatus";
+import  MiningStatus  from "./miningStatus";
 import { default as Miner } from './miner';
 let PythonShell = require('python-shell');
 let node_cron = require('node-cron');
@@ -17,7 +17,11 @@ export default class ProcessManager {
         }
         ProcessManager._instance = this;
         this.processor = new Processor(process.env.SAVE_FORMAT || "database");
-        this.scheduleNLTK();
+        
+        if (process.env.NODE_ENV != "test") {
+            this.scheduleNLTK();
+        }
+        
     }
     public static getInstance(): ProcessManager {
         return ProcessManager._instance;
@@ -93,7 +97,6 @@ export default class ProcessManager {
     private scheduleNLTK() {
         node_cron.schedule('*/6 * * * * *', async () => {  
             let tweets = <Array<JSON>>await this.getTweetsToSentimentize();
-            console.log(tweets.length)
             if (tweets.length > 50) {
                 console.log(this.startNLTKProcess(tweets));
             } else {

@@ -4,7 +4,7 @@ let Twitter = require('twitter');
 import { Request, Response } from "express";
 import { default as Processor } from "./processor";
 import * as Tweet from "../models/Tweet";
-import  MiningStatus  from "../dao/miningStatus";
+import  MiningStatus  from "./miningStatus";
 import * as settings from "../settings";
 
 export default class Miner {
