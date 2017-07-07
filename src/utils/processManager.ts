@@ -27,6 +27,10 @@ export default class ProcessManager {
         return ProcessManager._instance;
     }
 
+    // Start the Twitter miner, which will return all tweets in the continental
+    // US (1340 mile radius from the center of the country). The miner will 
+    // continue to mine 100 tweets roughly every 5 seconds until explicitly
+    //shut down.
     public startMiner() {
         if (this.minerCurrentProcess == undefined) {
             this.minerCurrentProcess = new Miner({ 
@@ -46,6 +50,8 @@ export default class ProcessManager {
         return "Miner stopped."
     }
 
+    // Return current status on the miner instance (API calls left, time
+    // to rate-limit window reset, API call frequency).
     public getMiningData() {
         if (this.minerCurrentProcess == undefined) {
             let ms = new MiningStatus
@@ -56,11 +62,17 @@ export default class ProcessManager {
         }
     }
 
+    // Return a batch of up to 250 tweets that have been saved to the db
+    // but have not yet been processed by the Python NLTK script.
     public async getTweetsToSentimentize() {
         let tweets = await this.processor.getUnSentimentizedTweets();
         return tweets;
     }
 
+    // If the python child process is not already currently running,
+    // start the Python script in a child process, pass it a batch of 
+    // data to be processed via stdin, and set listeners for recieving 
+    // data from it and for on process end.
     public startNLTKProcess(data: Array<JSON>): string {
         if (this.nltk == undefined) {
             this.nltk = new PythonShell('/src/scripts/sentimentAnalyzer.py');  
@@ -72,6 +84,7 @@ export default class ProcessManager {
             return "Python process started."
     }
 
+    // Set listeners for child process for data from stdout and process end.
     private setNLTKListeners() {
         this.nltk.on('message', (data: any) => {
         const tweet = JSON.parse(data);
@@ -87,6 +100,8 @@ export default class ProcessManager {
         });
     }
 
+    // Pass JSON-stringified tweets via stdin to the Python child process
+    // via stdin, which will populate the sentimentData field on each.
     private passDataToNLTK(data: Array<JSON>) {
         this.nltk.send(JSON.stringify(data));
     }
@@ -94,6 +109,9 @@ export default class ProcessManager {
         this.nltk = undefined;
     }
 
+    // Query the db for data to be processed every 6 seconds. If there are
+    // more than 50 returned, start the child process running the Python
+    // script to process them.
     private scheduleNLTK() {
         node_cron.schedule('*/6 * * * * *', async () => {  
             let tweets = <Array<JSON>>await this.getTweetsToSentimentize();

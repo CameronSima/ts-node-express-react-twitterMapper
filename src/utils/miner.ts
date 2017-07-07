@@ -41,6 +41,10 @@ export default class Miner {
         //         filename: "../logs/miner.log"
         //     });
     }
+
+    // One loop of the tweet mining process. Collect api rate-limit state
+    // from the rate-limit endpoint, then call the endpoint for returning
+    // tweets at the optimal interval.
     public async mine() {
 
         if (this.kill) {
@@ -48,11 +52,7 @@ export default class Miner {
         } else {
             await this.getRateLimit();
             this.getApiCallState();
-
-            console.log("\nCalls left: " + this.apiCallsRemaining + 
-                        "\nTime to reset: " + (this.timeToReset / 60000) + 
-                        "\ninterval: " + this.apiCallInterval / 1000);
-            
+            this.printApiCallState();
             this.callApi(() => {
                 setTimeout(this.mine.bind(this), this.apiCallInterval)
             })
@@ -65,9 +65,15 @@ export default class Miner {
         this.getCallInterval();
     }
 
+    printApiCallState() {
+        console.log("\nCalls left: " + this.apiCallsRemaining + 
+                    "\nTime to reset: " + (this.timeToReset / 60000) + 
+                    "\ninterval: " + this.apiCallInterval / 1000);
+    }
+
+    // Call twitter endpoint for returning tweets, then save them to the db.
     private async callApi(next: Function) {
         await this.getTweets();
-        //console.log(this.tweets[0])
         this.processor.save(this.tweets);
         next();
     }
@@ -120,6 +126,7 @@ export default class Miner {
         }
     }
 
+    // Mining status for frontend output.
     getMiningStatus(): MiningStatus {
         let ms = new MiningStatus;
         ms.callsleft = this.apiCallsRemaining;

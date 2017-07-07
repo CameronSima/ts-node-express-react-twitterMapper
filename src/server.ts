@@ -27,7 +27,7 @@ const MongoStore = mongo(session);
 /**
  * Load environment variables from .env file, where API keys and passwords are configured.
  */
-dotenv.config({ path: ".env.example" });
+dotenv.config({ path: ".env" });
 
 /**
  * Controllers 
@@ -60,9 +60,9 @@ mongoose.connection.on("error", () => {
 /**
  * Express configuration.
  */
-app.set("port", process.env.PORT || 3000);
-app.set("views", path.join(__dirname, "../views"));
-app.set("view engine", "pug");
+app.set("port", process.env.PORT || 3030);
+// app.set("views", path.join(__dirname, "../views"));
+// app.set("view engine", "pug");
 app.use(compression());
 app.use(logger("dev"));
 app.use(bodyParser.json());
@@ -100,8 +100,11 @@ app.use(lusca.xssProtection(true));
 //   }
 //   next();
 // });
-app.use(express.static(path.join(__dirname, "public"), { maxAge: 31557600000 }));
 
+// serve static ReactJS build 
+app.use(express.static(path.join(__dirname, "../../react-client/public"), { maxAge: 31557600000 }));
+
+// Allow cross-origin requests
 app.use((req, res, next) => {
     res.header('Access-Control-Allow-Origin', '*');
     res.header('Access-Control-Allow-Methods', 'GET');
@@ -109,9 +112,15 @@ app.use((req, res, next) => {
     next();
 })
 
-/**
- * Primary app routes.
- */
+
+// Primary app routes.
+
+
+// Serve the ReactJS index.html and bundle.js files 
+// from the client project folder
+app.get("/", (req, res) => {
+  res.sendFile(path.resolve(__dirname, '../../react-client/index.html'))
+});
 
 /**
  * OAuth authentication routes. (Sign in)
@@ -120,6 +129,9 @@ app.get("/auth/facebook", passport.authenticate("facebook", { scope: ["email", "
 app.get("/auth/facebook/callback", passport.authenticate("facebook", { failureRedirect: "/login" }), (req, res) => {
   res.redirect(req.session.returnTo || "/");
 });
+
+// return the mapbox access token
+app.get("/get_mapbox_token", dataController.getMapBoxToken);
 
 app.get("/activate_miner", miningController.getTurnOn);
 app.get("/deactivate_miner", miningController.getTurnOff);

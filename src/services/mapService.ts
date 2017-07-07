@@ -14,7 +14,7 @@ export default class MapService<Tweet> {
            latLng: { $ne: null }
        })
        //.limit(200000)
-        .select("sentimentData latLng hashtags")
+        .select("sentimentData latLng text hashtags")
     }
 
 
