@@ -22,6 +22,26 @@ export default class Processor {
         this.getSaveFormat(saveFormat);
     }
 
+    public async deleteOldData() {
+        var currentDate = new Date();
+        // date 1 day ago
+        currentDate.setDate(currentDate.getDate() -1);
+
+        Tweet.find({
+            date: { $lt: currentDate }
+        })
+        .remove()
+        .exec()
+    }
+
+    public async deleteUnGeocoded() {
+        Tweet.find({
+            latLng: null
+        })
+        .remove()
+        .exec()
+    }
+
     public async getUnSentimentizedTweets() {
         return new Promise((resolve, reject) => {
             Tweet.find({
@@ -61,12 +81,6 @@ export default class Processor {
     public async updateTweet(tweet: any) {
         await this.setCoords(tweet);
         this.setProcessedFields(tweet);
-
-        // if (tweet.latLng == undefined) {
-        //     Tweet.findByIdAndRemove(tweet._id);
-        // } else {
-        //     this.setProcessedFields(tweet);
-        // }
     }
 
     setProcessedFields(tweet: TweetModel) {
